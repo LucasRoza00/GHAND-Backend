@@ -19,6 +19,7 @@ import com.example.ghandbk.exceptions.NotFoundException;
 import com.example.ghandbk.repository.UsuarioRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -311,6 +312,11 @@ public class UsuarioService {
             agenda.add(agendaPagamento);
             user.setPagamentos(agenda);
         }
+        return user;
+    }
+
+    public List<Usuario> getUsers() {
+        List<Usuario> user =  usuarioRepo.findAll();
         return user;
     }
 }

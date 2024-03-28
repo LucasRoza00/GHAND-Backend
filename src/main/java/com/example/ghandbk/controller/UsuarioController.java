@@ -12,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/usuario")
@@ -35,6 +37,11 @@ public class UsuarioController {
     public ResponseEntity deleteUser(@RequestBody UsuarioRequestDto usuarioRequestDto) throws InvalidValueException, NotFoundException, NotAuthorizedException {
         usuarioService.deleteUser(usuarioRequestDto);
         return new ResponseEntity(HttpStatus.ACCEPTED);
+    }
+
+    @GetMapping("/allUser")
+    public ResponseEntity<List<Usuario>> getUsers() {
+        return new ResponseEntity(usuarioService.getUsers(), HttpStatus.FOUND);
     }
 //
 //    @GetMapping("/findByUsername/{id}")
