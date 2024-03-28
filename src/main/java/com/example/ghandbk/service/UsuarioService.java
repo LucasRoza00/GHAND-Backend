@@ -315,8 +315,18 @@ public class UsuarioService {
         return user;
     }
 
+<<<<<<< HEAD
     public List<Usuario> getUsers() {
         List<Usuario> user =  usuarioRepo.findAll();
         return user;
+=======
+    public UsuarioDto loginUser(UsuarioRequestDto usuarioRequestDto) throws NotAuthorizedException, NotFoundException {
+        if (usuarioRequestDto.getUsername().isEmpty() && usuarioRequestDto.getPassword().isEmpty()) throw new NotAuthorizedException("Dados inválidos");
+        if (!usuarioRepo.existsById(usuarioRequestDto.getUsername())) throw new NotFoundException("Usuário não encontrado");
+        if (usuarioRepo.findUser(usuarioRequestDto.getUsername(), usuarioRequestDto.getPassword()) == null) throw new NotAuthorizedException("Usuário inválido");
+        Usuario userToLog = usuarioRepo.findUser(usuarioRequestDto.getUsername(), usuarioRequestDto.getPassword());
+        return objectMapper.convertValue(userToLog, UsuarioDto.class);
+
+>>>>>>> 4c43a508ed08f0af4692607edf385a596c31ce18
     }
 }
