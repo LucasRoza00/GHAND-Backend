@@ -19,6 +19,7 @@ import com.example.ghandbk.exceptions.NotFoundException;
 import com.example.ghandbk.repository.UsuarioRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -164,8 +165,9 @@ public class UsuarioService {
         usuarioRepo.save(user);
         List<AgendaProdDto> agendaProdutosToFilter = user.getProdutos().stream()
                 .filter(prod -> prod.getDateToPayOrReceive()
-                        .equals(usuarioRequestDto.getAgendaProduto().getDateToPayOrReceive())).map(agenda -> AgendaProdDto.builder().nameProduct(agenda.getNameProduct()).amount(agenda.getAmount()).status(agenda.getStatus()).dateToPayOrReceive(agenda.getDateToPayOrReceive()).build()).toList();
-        AgendaProdDto agendaToReturn = agendaProdutosToFilter.stream().filter(filtro -> filtro.getFornecedorDto().getCnpj().equals(usuarioRequestDto.getAgendaProduto().getFornecedor().getCnpj())).findAny().get();
+                        .equals(usuarioRequestDto.getAgendaProduto().getDateToPayOrReceive())).map(agenda -> AgendaProdDto.builder().nameProduct(agenda.getNameProduct()).amount(agenda.getAmount()).status(agenda.getStatus()).dateToPayOrReceive(agenda.getDateToPayOrReceive())
+                        .fornecedorDto(FornecedorDto.builder().status(agenda.getFornecedor().getStatus()).razaoSocial(agenda.getFornecedor().getRazaoSocial()).cnpj(agenda.getFornecedor().getCnpj()).build()).build()).toList();
+        AgendaProdDto agendaToReturn = agendaProdutosToFilter.stream().filter(filtro -> filtro.getFornecedorDto().getCnpj().equals(cnpj)).findAny().get();
         return agendaToReturn;
     }
 
@@ -314,6 +316,11 @@ public class UsuarioService {
         return user;
     }
 
+
+    public List<Usuario> getUsers() {
+        List<Usuario> user = usuarioRepo.findAll();
+        return user;
+    }
     public UsuarioDto loginUser(UsuarioRequestDto usuarioRequestDto) throws NotAuthorizedException, NotFoundException {
         if (usuarioRequestDto.getUsername().isEmpty() && usuarioRequestDto.getPassword().isEmpty()) throw new NotAuthorizedException("Dados inválidos");
         if (!usuarioRepo.existsById(usuarioRequestDto.getUsername())) throw new NotFoundException("Usuário não encontrado");

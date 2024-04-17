@@ -25,17 +25,16 @@ public class FornecedorService {
     private final UsuarioService usuarioService;
     private final ObjectMapper objectMapper;
 
-    public Fornecedor addFornecedor(FornecedorRequestDto fornecedorRequestDto) throws InvalidValueException, NotAuthorizedException, NotFoundException {
+    public void addFornecedor(FornecedorRequestDto fornecedorRequestDto) throws InvalidValueException, NotAuthorizedException, NotFoundException {
         if (fornecedorRequestDto.getRazaoSocial().isBlank()) throw new InvalidValueException("Preencha o campo");
         if (fornecedorRequestDto.getCnpj().length() <= 11) throw new InvalidValueException("Cnpj inválido");
-        if (fornecedorRequestDto.getStatus().equals(Situacao.INATIVA)) throw new InvalidValueException("Status inválido");
         UsuarioRequestDto usuarioRequestDto = new UsuarioRequestDto();
         usuarioRequestDto.setUsername(fornecedorRequestDto.getUsername());
         usuarioRequestDto.setName(fornecedorRequestDto.getName());
         Fornecedor fornecedor = objectMapper.convertValue(fornecedorRequestDto, Fornecedor.class);
+        fornecedor.setStatus(Situacao.ATIVA);
         usuarioRequestDto.setFornecedor(fornecedor);
         usuarioService.updateUser(usuarioRequestDto);
-        return fornecedor;
     }
 
     public List<FornecedorDto> findAllFornecedores(String username) throws InvalidValueException, NotFoundException {

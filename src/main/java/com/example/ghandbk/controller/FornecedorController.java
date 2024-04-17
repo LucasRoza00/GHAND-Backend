@@ -22,16 +22,17 @@ public class FornecedorController {
     private final FornecedorService fornecedorService;
 
     @PostMapping("/createFornecedor")
-    public ResponseEntity<Fornecedor> insertFornecedor(@RequestBody FornecedorRequestDto fornecedorRequestDto) throws NotFoundException, InvalidValueException, NotAuthorizedException {
-        return new ResponseEntity(fornecedorService.addFornecedor(fornecedorRequestDto), HttpStatus.CREATED);
+    public ResponseEntity insertFornecedor(@RequestBody FornecedorRequestDto fornecedorRequestDto) throws NotFoundException, InvalidValueException, NotAuthorizedException {
+        fornecedorService.addFornecedor(fornecedorRequestDto);
+        return new ResponseEntity(HttpStatus.CREATED);
     }
 
-    @GetMapping("/findAllFornecedores/{id}")
+    @PostMapping("/findAllFornecedores/{id}")
     public ResponseEntity<List<FornecedorDto>> findAllFornecedoresByUser(@PathVariable("id") String username) throws InvalidValueException, NotFoundException {
         return new ResponseEntity(fornecedorService.findAllFornecedores(username), HttpStatus.FOUND);
     }
 
-    @GetMapping("/findFornecedorByCnpj")
+    @PostMapping("/findFornecedorByCnpj")
     public ResponseEntity<FornecedorDto> findByCnpj(@RequestBody FornecedorRequestDto fornecedorRequestDto) throws InvalidValueException, NotFoundException {
         return new ResponseEntity(fornecedorService.getFornecedorByCnpj(fornecedorRequestDto), HttpStatus.FOUND);
     }
