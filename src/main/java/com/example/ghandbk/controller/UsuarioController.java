@@ -54,7 +54,7 @@ public class UsuarioController {
         return new ResponseEntity(usuarioService.findUserByid(username), HttpStatus.FOUND);
     }
 
-    @PostMapping("/logUser")
+    @GetMapping("/logUser")
     public ResponseEntity<UsuarioDto> logUser(@RequestBody UsuarioRequestDto usuarioRequestDto) throws NotFoundException, NotAuthorizedException {
         return new ResponseEntity(usuarioService.loginUser(usuarioRequestDto), HttpStatus.ACCEPTED);
     }

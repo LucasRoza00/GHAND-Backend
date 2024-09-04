@@ -27,12 +27,12 @@ public class FornecedorController {
         return new ResponseEntity(HttpStatus.CREATED);
     }
 
-    @PostMapping("/findAllFornecedores/{id}")
+    @GetMapping("/findAllFornecedores/{id}")
     public ResponseEntity<List<FornecedorDto>> findAllFornecedoresByUser(@PathVariable("id") String username) throws InvalidValueException, NotFoundException {
         return new ResponseEntity(fornecedorService.findAllFornecedores(username), HttpStatus.FOUND);
     }
 
-    @PostMapping("/findFornecedorByCnpj")
+    @GetMapping("/findFornecedorByCnpj")
     public ResponseEntity<FornecedorDto> findByCnpj(@RequestBody FornecedorRequestDto fornecedorRequestDto) throws InvalidValueException, NotFoundException {
         return new ResponseEntity(fornecedorService.getFornecedorByCnpj(fornecedorRequestDto), HttpStatus.FOUND);
     }
