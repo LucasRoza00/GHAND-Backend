@@ -27,7 +27,7 @@ public class FornecedorController {
         return new ResponseEntity(HttpStatus.CREATED);
     }
 
-    @GetMapping("/findAllFornecedores/{id}")
+    @PostMapping("/findAllFornecedores/{id}")
     public ResponseEntity<List<FornecedorDto>> findAllFornecedoresByUser(@PathVariable("id") String username) throws InvalidValueException, NotFoundException {
         return new ResponseEntity(fornecedorService.findAllFornecedores(username), HttpStatus.FOUND);
     }
