@@ -41,7 +41,7 @@ public class FornecedorController {
         return new ResponseEntity(fornecedorService.findFornecedorByrazaoSocial(fornecedorRequestDto), HttpStatus.FOUND);
     }
 
-    @GetMapping("/findFornecedorByStatus")
+    @PostMapping("/findFornecedorByStatus")
     public ResponseEntity<List<FornecedorDto>> findByStatus(@RequestBody FornecedorRequestDto fornecedorRequestDto) throws InvalidValueException, NotFoundException {
         return new ResponseEntity(fornecedorService.findByStatus(fornecedorRequestDto), HttpStatus.FOUND);
     }
