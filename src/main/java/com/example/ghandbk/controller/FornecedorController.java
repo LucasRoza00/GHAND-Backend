@@ -52,9 +52,9 @@ public class FornecedorController {
         return new ResponseEntity(HttpStatus.ACCEPTED);
     }
 
-    @PutMapping(value = "/updateFornecedor", produces = "application/json")
-    public ResponseEntity<FornecedorDto> updateFornecedor(@RequestBody FornecedorRequestDto fornecedorRequestDto) throws InvalidValueException, NotFoundException, NotAuthorizedException {
-        return new ResponseEntity(fornecedorService.updateFornecedor(fornecedorRequestDto), HttpStatus.ACCEPTED);
+    @PutMapping(value = "/updateFornecedor/{cnpj}", produces = "application/json")
+    public ResponseEntity<FornecedorDto> updateFornecedor(@PathVariable("cnpj") String cnpj, @RequestBody FornecedorRequestDto fornecedorRequestDto) throws InvalidValueException, NotFoundException, NotAuthorizedException {
+        return new ResponseEntity(fornecedorService.updateFornecedor(fornecedorRequestDto, cnpj), HttpStatus.ACCEPTED);
     }
 
     @PutMapping(value = "/updateStatus", produces = "application/json")

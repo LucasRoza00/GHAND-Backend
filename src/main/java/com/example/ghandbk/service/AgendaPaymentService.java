@@ -108,7 +108,7 @@ public class AgendaPaymentService {
         historico.setAgendaPagamento(agendaPagamento);
         FornecedorRequestDto fornecedorToUpdate = FornecedorRequestDto.builder().username(username).cnpj(cnpj).build();
         fornecedorToUpdate.setHistoricoPagamento(historico);
-        fornecedorService.updateFornecedor(fornecedorToUpdate);
+        fornecedorService.updateFornecedor(fornecedorToUpdate, cnpj);
     }
     private UsuarioRequestDto getInstanceForUserRQDto(String username, String name) {
         UsuarioRequestDto userToReturn = new UsuarioRequestDto();

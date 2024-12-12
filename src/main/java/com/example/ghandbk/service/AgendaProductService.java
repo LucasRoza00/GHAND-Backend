@@ -99,7 +99,7 @@ public class AgendaProductService {
         historico.setHistoricoTipo(TipoHistorico.PRODUTO);
         historico.setAgendaProdDto(agendaProdDto);
         fornecedorRequestDto.setHistoricoProduto(historico);
-        fornecedorService.updateFornecedor(fornecedorRequestDto);
+        fornecedorService.updateFornecedor(fornecedorRequestDto, cnpj);
     }
 
     private UsuarioRequestDto getInstanceForUserRQDto(String username, String name) {

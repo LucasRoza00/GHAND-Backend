@@ -54,7 +54,7 @@ public class FornecedorService {
     }
 
     public FornecedorDto getFornecedorByCnpj(FornecedorRequestDto fornecedorRequestDto) throws InvalidValueException, NotFoundException {
-        if (fornecedorRequestDto.getCnpj().isBlank() || fornecedorRequestDto.getCnpj().length() <= 11) throw new InvalidValueException("Cnpj inválido");
+        if (fornecedorRequestDto.getCnpj().isBlank() || fornecedorRequestDto.getCnpj().length() < 11) throw new InvalidValueException("Cnpj inválido");
         verifyCnpj(fornecedorRequestDto.getUsername(), fornecedorRequestDto.getCnpj());
         List<FornecedorDto> fornecedores = findAllFornecedores(fornecedorRequestDto.getUsername());
         Stream<FornecedorDto> fornecedorDto = fornecedores.stream().filter(fornecedor -> fornecedor.getCnpj().equals(fornecedorRequestDto.getCnpj()));
@@ -72,28 +72,31 @@ public class FornecedorService {
         usuarioService.deleteFornecedor(usuarioRequestDto);
     }
 
-    public FornecedorDto updateFornecedor(FornecedorRequestDto fornecedorRequestDto) throws InvalidValueException, NotFoundException, NotAuthorizedException {
-        if (fornecedorRequestDto.getCnpj().isBlank() || fornecedorRequestDto.getCnpj().length() <= 11) throw new InvalidValueException("Cnpj inválido");
+    public FornecedorDto updateFornecedor(FornecedorRequestDto fornecedorRequestDto, String cnpj) throws InvalidValueException, NotFoundException, NotAuthorizedException {
+        if (fornecedorRequestDto.getCnpj().isBlank() || fornecedorRequestDto.getCnpj().length() < 11) throw new InvalidValueException("Cnpj inválido");
         if (fornecedorRequestDto.getUsername() == null || fornecedorRequestDto.getUsername().isBlank()) throw new InvalidValueException("Usuario inválido");
         List<Fornecedor> fornecedors = usuarioService.getFornecedores(fornecedorRequestDto.getUsername());
-        Stream<Fornecedor> fornecedorStream = fornecedors.stream().filter(fornecedor -> fornecedor.getCnpj().equals(fornecedorRequestDto.getCnpj()));
-        Fornecedor fornecedorToSave = fornecedorStream.findAny().get();
-        if (fornecedorRequestDto.getRazaoSocial() != null) {
-            fornecedorToSave.setRazaoSocial(fornecedorRequestDto.getRazaoSocial());
-        } else if (fornecedorRequestDto.getStatus() != null) {
-            fornecedorToSave.setStatus(fornecedorRequestDto.getStatus());
-        }
-        if (fornecedorRequestDto.getHistoricoPagamento() != null) {
-            fornecedorToSave.setHistorico(insertHistory(fornecedorRequestDto));
-        } else if (fornecedorRequestDto.getHistoricoProduto() != null) {
-            fornecedorToSave.setHistorico(insertHistory(fornecedorRequestDto));
-        }
-        fornecedorToSave.setCnpj(fornecedorRequestDto.getCnpj());
         UsuarioRequestDto user = new UsuarioRequestDto();
-        user.setUsername(fornecedorRequestDto.getUsername());
-        user.setName(fornecedorRequestDto.getName());
-        user.setFornecedor(fornecedorToSave);
-        return usuarioService.updateFornecedor(user);
+        try {
+            Fornecedor fornecedorToSave = fornecedors.stream().filter(fornecedor -> fornecedor.getCnpj().equals(cnpj)).findAny().get();
+            if (fornecedorRequestDto.getRazaoSocial() != null) {
+                fornecedorToSave.setRazaoSocial(fornecedorRequestDto.getRazaoSocial());
+            } else if (fornecedorRequestDto.getStatus() != null) {
+                fornecedorToSave.setStatus(fornecedorRequestDto.getStatus());
+            }
+            if (fornecedorRequestDto.getHistoricoPagamento() != null) {
+                fornecedorToSave.setHistorico(insertHistory(fornecedorRequestDto));
+            } else if (fornecedorRequestDto.getHistoricoProduto() != null) {
+                fornecedorToSave.setHistorico(insertHistory(fornecedorRequestDto));
+            }
+            fornecedorToSave.setCnpj(fornecedorRequestDto.getCnpj());
+            user.setUsername(fornecedorRequestDto.getUsername());
+            user.setName(fornecedorRequestDto.getName());
+            user.setFornecedor(fornecedorToSave);
+        } catch (NoSuchElementException e){
+            throw new NotFoundException("Fornecedor inexistente");
+        }
+        return usuarioService.updateFornecedor(user, cnpj);
     }
 
     public FornecedorDto updateFornecedorByStatus(FornecedorRequestDto fornecedorRequestDto) throws InvalidValueException, NotFoundException, NotAuthorizedException {
@@ -110,7 +113,7 @@ public class FornecedorService {
         user.setUsername(fornecedorRequestDto.getUsername());
         user.setName(fornecedorRequestDto.getName());
         user.setFornecedor(fornecedorToSave);
-        return usuarioService.updateFornecedor(user);
+        return usuarioService.updateFornecedor(user, fornecedorRequestDto.getCnpj());
     }
     public List<FornecedorDto> findByStatus(FornecedorRequestDto fornecedorRequestDto) throws InvalidValueException, NotFoundException {
         if (fornecedorRequestDto.getUsername() == null || fornecedorRequestDto.getUsername().isBlank()) throw new InvalidValueException("Preencha o campo");

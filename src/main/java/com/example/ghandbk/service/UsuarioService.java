@@ -117,11 +117,11 @@ public class UsuarioService {
         return user.getPagamentos();
     }
 
-    public FornecedorDto updateFornecedor(UsuarioRequestDto usuarioRequestDto) throws NotAuthorizedException, InvalidValueException, NotFoundException {
+    public FornecedorDto updateFornecedor(UsuarioRequestDto usuarioRequestDto, String cnpj) throws NotAuthorizedException, InvalidValueException, NotFoundException {
         Usuario user = usuarioRepo.findById(usuarioRequestDto.getUsername()).get();
         if (usuarioRequestDto.getFornecedor() == null) throw new NotAuthorizedException("Fornecedor não autorizado");
         try {
-            Fornecedor fornecedorToRemove = user.getFornecedores().stream().filter(fornecedor -> fornecedor.getCnpj().equals(usuarioRequestDto.getFornecedor().getCnpj())).findAny().get();
+            Fornecedor fornecedorToRemove = user.getFornecedores().stream().filter(fornecedor -> fornecedor.getCnpj().equals(cnpj)).findAny().get();
             if (fornecedorToRemove != null) {
                 user.getFornecedores().remove(fornecedorToRemove);
             }
