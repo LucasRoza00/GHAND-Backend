@@ -197,16 +197,16 @@ public class UsuarioService {
         AgendaPaymentDto paymentToReturn = agendaToReturn.stream().filter(pay -> pay.getFornecedorDto().getCnpj().equals(cnpj)).findAny().get();
         return paymentToReturn;
     }
-    public void deleteFornecedor(UsuarioRequestDto usuarioRequestDto) throws NotFoundException, InvalidValueException, NotAuthorizedException {
-        if (usuarioRequestDto.getUsername() == null || usuarioRequestDto.getUsername().isEmpty()) throw new InvalidValueException("Usuario inválido");
-        if (!usuarioRepo.existsById(usuarioRequestDto.getUsername())) throw new NotAuthorizedException("Usuário não existe");
-        Usuario usuario = usuarioRepo.findById(usuarioRequestDto.getUsername()).get();
+    public void deleteFornecedor(String username, String cnpj) throws NotFoundException, InvalidValueException, NotAuthorizedException {
+        if (username == null || username.isEmpty()) throw new InvalidValueException("Usuario inválido");
+        if (!usuarioRepo.existsById(username)) throw new NotAuthorizedException("Usuário não existe");
+        Usuario usuario = usuarioRepo.findById(username).get();
         try {
-            usuario.getFornecedores().stream().filter(fornecedor -> fornecedor.getCnpj().equals(usuarioRequestDto.getFornecedor().getCnpj())).findAny().get();
+            usuario.getFornecedores().stream().filter(fornecedor -> fornecedor.getCnpj().equals(cnpj)).findAny().get();
         } catch (NoSuchElementException e) {
             throw new NotFoundException("Fornecedor não encontrado");
         }
-        Stream<Fornecedor> fornecedorStream = usuario.getFornecedores().stream().filter(fornecedor -> fornecedor.getCnpj().equals(usuarioRequestDto.getFornecedor().getCnpj()));
+        Stream<Fornecedor> fornecedorStream = usuario.getFornecedores().stream().filter(fornecedor -> fornecedor.getCnpj().equals(cnpj));
         Fornecedor fornecedor = fornecedorStream.findFirst().get();
         usuario.getFornecedores().remove(fornecedor);
         usuario.setFornecedores(usuario.getFornecedores());

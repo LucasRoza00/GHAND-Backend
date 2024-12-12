@@ -47,8 +47,9 @@ public class FornecedorController {
     }
 
     @DeleteMapping("deleteFornecedor")
-    public ResponseEntity deleteByCnpj(@RequestBody FornecedorRequestDto fornecedorRequestDto) throws InvalidValueException, NotFoundException, NotAuthorizedException {
-        fornecedorService.deleteFornecedor(fornecedorRequestDto);
+    public ResponseEntity deleteByCnpj(@RequestParam String username,
+                                       @RequestParam String cnpj) throws InvalidValueException, NotFoundException, NotAuthorizedException {
+        fornecedorService.deleteFornecedor(username,cnpj);
         return new ResponseEntity(HttpStatus.ACCEPTED);
     }
 

@@ -63,13 +63,10 @@ public class FornecedorService {
         return fornecedorReturn;
     }
 
-    public void deleteFornecedor(FornecedorRequestDto fornecedorRequestDto) throws InvalidValueException, NotFoundException, NotAuthorizedException {
-        if (fornecedorRequestDto.getUsername().isBlank()) throw new InvalidValueException("Preencha o campo");
-        UsuarioRequestDto usuarioRequestDto = new UsuarioRequestDto();
-        Fornecedor fornecedor = objectMapper.convertValue(fornecedorRequestDto, Fornecedor.class);
-        usuarioRequestDto.setUsername(fornecedorRequestDto.getUsername());
-        usuarioRequestDto.setFornecedor(fornecedor);
-        usuarioService.deleteFornecedor(usuarioRequestDto);
+    public void deleteFornecedor(String username, String cnpj) throws InvalidValueException, NotFoundException, NotAuthorizedException {
+        if (username.isBlank()) throw new InvalidValueException("Preencha o campo");
+        if (cnpj.isBlank() || cnpj.length() <11) throw new InvalidValueException("Cnpj Inválido");
+        usuarioService.deleteFornecedor(username, cnpj);
     }
 
     public FornecedorDto updateFornecedor(FornecedorRequestDto fornecedorRequestDto, String cnpj) throws InvalidValueException, NotFoundException, NotAuthorizedException {
