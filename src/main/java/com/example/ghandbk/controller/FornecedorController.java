@@ -36,7 +36,7 @@ public class FornecedorController {
     public ResponseEntity<FornecedorDto> findByCnpj(@RequestBody FornecedorRequestDto fornecedorRequestDto) throws InvalidValueException, NotFoundException {
         return new ResponseEntity(fornecedorService.getFornecedorByCnpj(fornecedorRequestDto), HttpStatus.FOUND);
     }
-    @GetMapping("/findFornecedorByRazaoSocial")
+    @PostMapping("/findFornecedorByRazaoSocial")
     public ResponseEntity<List<FornecedorDto>> findFornecedoresByRazaoSocial(@RequestBody FornecedorRequestDto fornecedorRequestDto) throws InvalidValueException, NotFoundException {
         return new ResponseEntity(fornecedorService.findFornecedorByrazaoSocial(fornecedorRequestDto), HttpStatus.FOUND);
     }
