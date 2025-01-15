@@ -43,7 +43,7 @@ public class FornecedorController {
 
     @PostMapping("/findFornecedorByStatus")
     public ResponseEntity<List<FornecedorDto>> findByStatus(@RequestBody FornecedorRequestDto fornecedorRequestDto) throws InvalidValueException, NotFoundException {
-        return new ResponseEntity(fornecedorService.findByStatus(fornecedorRequestDto), HttpStatus.FOUND);
+        return new ResponseEntity(fornecedorService.findByStatus(fornecedorRequestDto), HttpStatus.OK);
     }
 
     @DeleteMapping("deleteFornecedor")
