@@ -67,6 +67,7 @@ public class FornecedorService {
         if (username.isBlank()) throw new InvalidValueException("Preencha o campo");
         if (cnpj.isBlank() || cnpj.length() <11) throw new InvalidValueException("Cnpj Inválido");
         usuarioService.deleteFornecedor(username, cnpj);
+
     }
 
     public FornecedorDto updateFornecedor(FornecedorRequestDto fornecedorRequestDto, String cnpj) throws InvalidValueException, NotFoundException, NotAuthorizedException {

@@ -42,4 +42,9 @@ public class AgendaProdutoController {
     public ResponseEntity<AgendaProdDto> updateStatus(@RequestBody AgendaProdutoRequestDto agendaProdutoRequestDto) throws InvalidValueException, NotFoundException, NotAuthorizedException {
         return new ResponseEntity(agendaProductService.modifyStatus(agendaProdutoRequestDto), HttpStatus.ACCEPTED);
     }
+
+    @PostMapping("findAgenda/{username}")
+    public ResponseEntity<List<AgendaProdDto>> findAgenda(@PathVariable("username") String username) throws InvalidValueException, NotFoundException {
+        return new ResponseEntity(agendaProductService.findAgendas(username), HttpStatus.OK);
+    }
 }

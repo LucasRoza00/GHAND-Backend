@@ -102,6 +102,18 @@ public class AgendaProductService {
         fornecedorService.updateFornecedor(fornecedorRequestDto, cnpj);
     }
 
+    public List<AgendaProdDto> findAgendas(String username) throws InvalidValueException, NotFoundException {
+        if (username.isEmpty()) throw new InvalidValueException("Usuário inválido");
+        List<AgendaProdDto> agendaToReturn = usuarioService.getAgendaProdutcs(username).stream()
+                .map(agenda -> AgendaProdDto.builder()
+                        .nameProduct(agenda.getNameProduct())
+                        .amount(agenda.getAmount())
+                        .status(agenda.getStatus())
+                        .dateToPayOrReceive(agenda.getDateToPayOrReceive())
+                        .fornecedorDto(agenda.getFornecedor()).build()).toList();
+        if (agendaToReturn.isEmpty()) throw new NotFoundException("Não há produtos agendados");
+        return agendaToReturn;
+    }
     private UsuarioRequestDto getInstanceForUserRQDto(String username, String name) {
         UsuarioRequestDto userToReturn = new UsuarioRequestDto();
         userToReturn.setUsername(username);
