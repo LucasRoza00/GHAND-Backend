@@ -213,17 +213,17 @@ public class UsuarioService {
         usuarioRepo.save(usuario);
     }
 
-    public void deleteReceiveInAgenda(AgendaProdutoRequestDto agendaProdutoRequestDto) throws InvalidValueException, NotFoundException, NotAuthorizedException {
-        if (agendaProdutoRequestDto.getUsername().isEmpty()) throw new NotAuthorizedException("Usuario inválido");
-        if (!usuarioRepo.existsById(agendaProdutoRequestDto.getUsername())) throw new NotFoundException("Usuário não encontrado");
-        Usuario user = usuarioRepo.findById(agendaProdutoRequestDto.getUsername()).get();
+    public void deleteReceiveInAgenda(String username, String name, String cnpj, LocalDate dateToPayOrReceive) throws InvalidValueException, NotFoundException, NotAuthorizedException {
+        if (username.isEmpty()) throw new NotAuthorizedException("Usuario inválido");
+        if (!usuarioRepo.existsById(username)) throw new NotFoundException("Usuário não encontrado");
+        Usuario user = usuarioRepo.findById(username).get();
         if (!user.getProdutos().isEmpty()) {
             try {
-                List<AgendaProduto> agendaProdutos = user.getProdutos().stream().filter(produtos -> produtos.getDateToPayOrReceive().equals(agendaProdutoRequestDto.getDateToPayOrReceive())).toList();
+                List<AgendaProduto> agendaProdutos = user.getProdutos().stream().filter(produtos -> produtos.getDateToPayOrReceive().equals(dateToPayOrReceive)).toList();
                 if (agendaProdutos.isEmpty()) {
                     throw new NotFoundException("Não há agenndamentos para este dia");
                 }
-                AgendaProduto agenda = agendaProdutos.stream().filter(agendaProduto -> agendaProduto.getFornecedor().getCnpj().equals(agendaProdutoRequestDto.getCnpj())).findAny().get();
+                AgendaProduto agenda = agendaProdutos.stream().filter(agendaProduto -> agendaProduto.getFornecedor().getCnpj().equals(cnpj)).findAny().get();
                 user.getProdutos().remove(agenda);
             } catch (NoSuchElementException e) {
                 throw new NotAuthorizedException("Não há produtos agendados");

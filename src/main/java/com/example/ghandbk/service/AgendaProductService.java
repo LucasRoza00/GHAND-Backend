@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -50,42 +51,42 @@ public class AgendaProductService {
         return agendaToReturn;
     }
 
-    public void deleteReceive(AgendaProdutoRequestDto agendaProdutoRequestDto) throws InvalidValueException, NotFoundException, NotAuthorizedException {
-        if (agendaProdutoRequestDto.getCnpj().isEmpty() || agendaProdutoRequestDto.getCnpj().length() <= 11) throw new InvalidValueException("Cnpj inválido");
-        if (agendaProdutoRequestDto.getDateToPayOrReceive() == null) throw new InvalidValueException("Data inválida");
-        usuarioService.deleteReceiveInAgenda(agendaProdutoRequestDto);
+    public void deleteReceive(String username, String name, String cnpj, LocalDate dateToPayOrReceive) throws InvalidValueException, NotFoundException, NotAuthorizedException {
+        if (cnpj.isEmpty()) throw new InvalidValueException("Cnpj inválido");
+        if (dateToPayOrReceive == null) throw new InvalidValueException("Data inválida");
+        usuarioService.deleteReceiveInAgenda(username, name, cnpj, dateToPayOrReceive);
     }
 
-    public AgendaProdDto modifyStatus(AgendaProdutoRequestDto agendaProdutoRequestDto) throws InvalidValueException, NotFoundException, NotAuthorizedException {
-        if (agendaProdutoRequestDto.getCnpj().isEmpty() || agendaProdutoRequestDto.getCnpj().length() <= 11) throw new InvalidValueException("Cnpj inválido");
-        if (agendaProdutoRequestDto.getDateToPayOrReceive() == null) throw new InvalidValueException("Data inválida");
-        List<AgendaProduto> produtos = usuarioService.getAgendaProdutcs(agendaProdutoRequestDto.getUsername());
+    public AgendaProdDto modifyStatus(String username, String name, String cnpj, LocalDate dateToPayOrreceive, SituacaoProduto status) throws InvalidValueException, NotFoundException, NotAuthorizedException {
+        if (cnpj.isEmpty()) throw new InvalidValueException("Cnpj inválido");
+        if (dateToPayOrreceive == null) throw new InvalidValueException("Data inválida");
+        List<AgendaProduto> produtos = usuarioService.getAgendaProdutcs(username);
         if (!produtos.isEmpty()) {
             try {
-                List<AgendaProduto> agendaProdutos = produtos.stream().filter(prod -> prod.getDateToPayOrReceive().equals(agendaProdutoRequestDto.getDateToPayOrReceive())).toList();
+                List<AgendaProduto> agendaProdutos = produtos.stream().filter(prod -> prod.getDateToPayOrReceive().equals(dateToPayOrreceive)).toList();
                 if (agendaProdutos.isEmpty()) {
                     throw new NotFoundException("Não há agenndamentos para este dia");
                 }
-                agendaProdutos.stream().filter(agendaProduto -> agendaProduto.getFornecedor().getCnpj().equals(agendaProdutoRequestDto.getCnpj())).findAny().get();
+                agendaProdutos.stream().filter(agendaProduto -> agendaProduto.getFornecedor().getCnpj().equals(cnpj)).findAny().get();
             } catch (NoSuchElementException e) {
                 throw new NotFoundException("Não há agendamentos nesse dia com este cnpj");
             }
         } else {
             throw new NotFoundException("Não há agendamentos");
         }
-        List<AgendaProduto> agendaProdutos = produtos.stream().filter(prod -> prod.getDateToPayOrReceive().equals(agendaProdutoRequestDto.getDateToPayOrReceive())).toList();
-        AgendaProduto agendaToModity = agendaProdutos.stream().filter(agendaProduto -> agendaProduto.getFornecedor().getCnpj().equals(agendaProdutoRequestDto.getCnpj())).findAny().get();
-        if (!agendaToModity.getStatus().equals(agendaProdutoRequestDto.getStatus())) {
-            switch (agendaProdutoRequestDto.getStatus()) {
-                case RECEBIDO,NAO_RECEBIDO -> agendaToModity.setStatus(agendaProdutoRequestDto.getStatus());
+        List<AgendaProduto> agendaProdutos = produtos.stream().filter(prod -> prod.getDateToPayOrReceive().equals(dateToPayOrreceive)).toList();
+        AgendaProduto agendaToModity = agendaProdutos.stream().filter(agendaProduto -> agendaProduto.getFornecedor().getCnpj().equals(cnpj)).findAny().get();
+        if (!agendaToModity.getStatus().equals(status)) {
+            switch (status) {
+                case RECEBIDO,NAO_RECEBIDO -> agendaToModity.setStatus(status);
             }
         }
         UsuarioRequestDto user = new UsuarioRequestDto();
-        user.setUsername(agendaProdutoRequestDto.getUsername());
-        user.setName(agendaProdutoRequestDto.getName());
+        user.setUsername(username);
+        user.setName(name);
         user.setAgendaProduto(agendaToModity);
-        AgendaProdDto agendaToReturn = usuarioService.updateAgendaProductsByStatus(user, agendaProdutoRequestDto.getCnpj());
-        insertAgendaInHistorico(agendaToReturn, agendaProdutoRequestDto.getCnpj(), agendaProdutoRequestDto.getUsername());
+        AgendaProdDto agendaToReturn = usuarioService.updateAgendaProductsByStatus(user, cnpj);
+        insertAgendaInHistorico(agendaToReturn, cnpj, username);
         return agendaToReturn;
     }
 
