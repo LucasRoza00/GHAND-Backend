@@ -26,6 +26,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -66,27 +67,13 @@ public class UsuarioService {
         if (usuarioRequestDto.getAgendaPagamento() != null) {
             insertAgendaPagamento(user, usuarioRequestDto.getAgendaPagamento());
         }
-        user.setName(usuarioRequestDto.getName());
+        if (!usuarioRequestDto.getName().isEmpty()) {
+            user.setName(usuarioRequestDto.getName());
+        }
         user.setUsername(usuarioRequestDto.getUsername());
         usuarioRepo.save(user);
         return usuarioRepo.findById(user.getUsername()).get();
     }
-
-//    public UsuarioDto findUser(String username) throws  InvalidValueException, NotFoundException {
-//        if (username.isBlank()) throw new InvalidValueException("Username inválido");
-//        if (!usuarioRepo.existsById(username)) throw new NotFoundException("Usuário não encontrado");
-//        Usuario usuario = usuarioRepo.findById(username).get();
-//        UsuarioDto userReturn = objectMapper.convertValue(usuario, UsuarioDto.class);
-//        try {
-//            List<FornecedorDto> fornecedoresToReturn = usuario.getFornecedores().stream()
-//                    .map(a -> new FornecedorDto
-//                            (a.getRazaoSocial(), a.getCnpj(), a.getStatus(), a.getHistorico())).collect(Collectors.toList());
-//            userReturn.setFornecedoresDto(fornecedoresToReturn);
-//        } catch (NullPointerException e) {
-//            return userReturn;
-//        }
-//        return userReturn;
-//    }
     public Usuario findUserByid(String username) throws NotFoundException, InvalidValueException {
         if (username.isBlank()) throw new InvalidValueException("Username inválido");
         if (!usuarioRepo.existsById(username)) throw new NotFoundException("Usuário não encontrado");
@@ -233,18 +220,18 @@ public class UsuarioService {
         usuarioRepo.save(user);
     }
 
-    public void deletePaymentInAgenda(AgendaPaymentRequestDto agendaPaymentRequestDto) throws NotAuthorizedException, NotFoundException {
-        if (agendaPaymentRequestDto.getUsername().isEmpty()) throw new NotAuthorizedException("Usuario inválido");
-        if (!usuarioRepo.existsById(agendaPaymentRequestDto.getUsername())) throw new NotFoundException("Usuario não encontrado");
-        Usuario user = usuarioRepo.findById(agendaPaymentRequestDto.getUsername()).get();
+    public void deletePaymentInAgenda(String username, String cnpj, LocalDate dateToPayOrReceive) throws NotAuthorizedException, NotFoundException {
+        if (username.isEmpty()) throw new NotAuthorizedException("Usuario inválido");
+        if (!usuarioRepo.existsById(username)) throw new NotFoundException("Usuario não encontrado");
+        Usuario user = usuarioRepo.findById(username).get();
         if (!user.getPagamentos().isEmpty()) {
             try {
                 List<AgendaPagamento> agendaPagamentos = user.getPagamentos().stream().filter(
-                        agendaPagamento -> agendaPagamento.getDateToPayOrReceive().equals(agendaPaymentRequestDto.getDateToPayOrReceive())).toList();
+                        agendaPagamento -> agendaPagamento.getDateToPayOrReceive().equals(dateToPayOrReceive)).toList();
                 if (agendaPagamentos.isEmpty()) {
                     throw new NotFoundException("Não há agendamentos para este dia");
                 }
-                AgendaPagamento agenda = agendaPagamentos.stream().filter(pagamento -> pagamento.getFornecedorDto().getCnpj().equals(agendaPaymentRequestDto.getCnpj())).findAny().get();
+                AgendaPagamento agenda = agendaPagamentos.stream().filter(pagamento -> pagamento.getFornecedorDto().getCnpj().equals(cnpj)).findAny().get();
                 user.getPagamentos().remove(agenda);
             } catch (NoSuchElementException e) {
                 throw new NotAuthorizedException("Não há pagamentos agendados");
@@ -310,6 +297,7 @@ public class UsuarioService {
             }
         } catch (NullPointerException e) {
             List<AgendaPagamento> agenda = new ArrayList<>();
+            System.out.println(agendaPagamento);
             agenda.add(agendaPagamento);
             user.setPagamentos(agenda);
         }
@@ -328,5 +316,21 @@ public class UsuarioService {
         Usuario userToLog = usuarioRepo.findUser(usuarioRequestDto.getUsername(), usuarioRequestDto.getPassword());
         return objectMapper.convertValue(userToLog, UsuarioDto.class);
 
+    }
+
+    public UsuarioDto modifyUsersInfo(String username, String usernameTOSet, String nameToSet, String password) throws InvalidValueException, NotAuthorizedException {
+        if (username.isEmpty()) throw new InvalidValueException("Username Inválido");
+        if (usernameTOSet.isEmpty() && nameToSet.isEmpty()) throw new InvalidValueException("Informações novas inválidas");
+        if (usuarioRepo.findUser(username, password) == null) throw new NotAuthorizedException("Username/Password inválidas");
+        Usuario user = usuarioRepo.findUser(username, password);
+        if (!Objects.equals(user.getUsername(), usernameTOSet)) {
+            user.setUsername(usernameTOSet);
+        }
+        if (!Objects.equals(user.getName(), nameToSet)) {
+            user.setName(nameToSet);
+        }
+        usuarioRepo.deleteById(username);
+        usuarioRepo.save(user);
+        return objectMapper.convertValue(user, UsuarioDto.class);
     }
 }

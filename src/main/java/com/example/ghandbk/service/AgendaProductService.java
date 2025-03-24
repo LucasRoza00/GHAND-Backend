@@ -2,7 +2,9 @@ package com.example.ghandbk.service;
 
 import com.example.ghandbk.collection.enums.SituacaoProduto;
 import com.example.ghandbk.collection.enums.TipoHistorico;
+import com.example.ghandbk.collection.history.History;
 import com.example.ghandbk.collection.schedule.AgendaProduto;
+import com.example.ghandbk.collection.supplier.Historico;
 import com.example.ghandbk.collection.supplier.HistoricoProduto;
 import com.example.ghandbk.dto.schedule.product.AgendaProdDto;
 import com.example.ghandbk.dto.schedule.product.AgendaProdutoRequestDto;
@@ -12,6 +14,7 @@ import com.example.ghandbk.dto.user.UsuarioRequestDto;
 import com.example.ghandbk.exceptions.InvalidValueException;
 import com.example.ghandbk.exceptions.NotAuthorizedException;
 import com.example.ghandbk.exceptions.NotFoundException;
+import com.example.ghandbk.repository.HistoricoRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,7 +30,20 @@ public class AgendaProductService {
     private final FornecedorService fornecedorService;
     private final UsuarioService usuarioService;
     private final ObjectMapper objectMapper;
+    private final HistoricoRepository historicoRepository;
 
+    public List<AgendaProdDto> findAgendaByStatus(AgendaProdutoRequestDto agendaProdutoRequestDto) throws InvalidValueException, NotFoundException, NotAuthorizedException {
+        if (agendaProdutoRequestDto.getUsername().isEmpty()) throw new NotAuthorizedException("Usuario inválido");
+        if (agendaProdutoRequestDto.getStatus().toString().isEmpty()) throw new InvalidValueException("Status inválido");
+        List<AgendaProduto> agenda = usuarioService.getAgendaProdutcs(agendaProdutoRequestDto.getUsername());
+        List<AgendaProdDto> agendaToReturn = agenda.stream().filter(prod -> prod.getStatus().equals(agendaProdutoRequestDto.getStatus()))
+                .map(oldAgenda -> AgendaProdDto.builder()
+                        .nameProduct(oldAgenda.getNameProduct())
+                        .amount(oldAgenda.getAmount())
+                        .status(oldAgenda.getStatus())
+                        .dateToPayOrReceive(oldAgenda.getDateToPayOrReceive()).build()).toList();
+        return  agendaToReturn;
+    }
     public void insertNewSchedule(AgendaProdutoRequestDto agendaProdutoRequestDto) throws InvalidValueException, NotFoundException, NotAuthorizedException {
         if (agendaProdutoRequestDto.getCnpj() == null || agendaProdutoRequestDto.getCnpj().isBlank()) throw new InvalidValueException("Cnpj inválido");
         if (agendaProdutoRequestDto.getAmount() <= 0) throw new InvalidValueException("Quantidade inválida");
@@ -121,6 +137,5 @@ public class AgendaProductService {
         userToReturn.setName(name);
         return userToReturn;
     }
-
-
+    
 }

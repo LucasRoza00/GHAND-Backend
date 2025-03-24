@@ -17,6 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -42,6 +43,19 @@ public class AgendaPaymentService {
         return agenda;
     }
 
+    public List<AgendaPaymentDto> findAgendas(String username) throws InvalidValueException, NotFoundException {
+        if (username.isEmpty()) throw new InvalidValueException("Username inválido");
+        List<AgendaPaymentDto> agendaToReturn = usuarioService.getAgendaPayments(username).stream().map(agenda -> AgendaPaymentDto
+                .builder()
+                .valueToPay(agenda.getValueToPay())
+                .situacaoPagamento(agenda.getSituacaoPagamento())
+                .dateToPayOrReceive(agenda.getDateToPayOrReceive())
+                .fornecedorDto(agenda.getFornecedorDto())
+                .build()).toList();
+        if (agendaToReturn.isEmpty()) throw new NotFoundException("Não há agendamentos");
+        return agendaToReturn;
+    }
+
     public List<AgendaPaymentDto> findAgendaByMonth(AgendaPaymentRequestDto agendaPaymentRequestDto) throws InvalidValueException, NotFoundException {
         if (agendaPaymentRequestDto.getDateToPayOrReceive().getMonth() == null) throw new InvalidValueException("Data inválida");
         List<AgendaPagamento> agenda = usuarioService.getAgendaPayments(agendaPaymentRequestDto.getUsername());
@@ -61,40 +75,40 @@ public class AgendaPaymentService {
         return agendaToReturn;
     }
 
-    public void deletePayment(AgendaPaymentRequestDto agendaPaymentRequestDto) throws InvalidValueException, NotFoundException, NotAuthorizedException {
-        if (agendaPaymentRequestDto.getCnpj().isEmpty() || agendaPaymentRequestDto.getCnpj().length() <= 11) throw new InvalidValueException("Cnpj inválido");
-        if (agendaPaymentRequestDto.getDateToPayOrReceive() == null) throw new InvalidValueException("Data inválida");
-        usuarioService.deletePaymentInAgenda(agendaPaymentRequestDto);
+    public void deletePayment(String username, String cnpj, LocalDate dateToPayOrReceive) throws InvalidValueException, NotFoundException, NotAuthorizedException {
+        if (cnpj.isEmpty()) throw new InvalidValueException("Cnpj inválido");
+        if (dateToPayOrReceive == null) throw new InvalidValueException("Data inválida");
+        usuarioService.deletePaymentInAgenda(username, cnpj, dateToPayOrReceive);
     }
 
-    public AgendaPaymentDto modifyStatus(AgendaPaymentRequestDto agendaPaymentRequestDto) throws InvalidValueException, NotFoundException, NotAuthorizedException {
-        if (agendaPaymentRequestDto.getCnpj().isEmpty() || agendaPaymentRequestDto.getCnpj().length() <= 11) throw new InvalidValueException("Cnpj inválido");
-        if (agendaPaymentRequestDto.getDateToPayOrReceive() == null) throw new InvalidValueException("Data inválida");
-        List<AgendaPagamento> pagamentos = usuarioService.getAgendaPayments(agendaPaymentRequestDto.getUsername());
+    public AgendaPaymentDto modifyStatus(String username, String name, String cnpj, LocalDate dateToPayOrReceive, SituacaoPagamento status) throws InvalidValueException, NotFoundException, NotAuthorizedException {
+        if (cnpj.isEmpty()) throw new InvalidValueException("Cnpj inválido");
+        if (dateToPayOrReceive == null) throw new InvalidValueException("Data inválida");
+        List<AgendaPagamento> pagamentos = usuarioService.getAgendaPayments(username);
         if (!pagamentos.isEmpty()) {
             try {
-                List<AgendaPagamento> agendaPagamentos = pagamentos.stream().filter(pay -> pay.getDateToPayOrReceive().equals(agendaPaymentRequestDto.getDateToPayOrReceive())).toList();
+                List<AgendaPagamento> agendaPagamentos = pagamentos.stream().filter(pay -> pay.getDateToPayOrReceive().equals(dateToPayOrReceive)).toList();
                 if (agendaPagamentos.isEmpty()) {
                     throw new NotFoundException("Não há agenndamentos para este dia");
                 }
-                agendaPagamentos.stream().filter(agendaProduto -> agendaProduto.getFornecedorDto().getCnpj().equals(agendaPaymentRequestDto.getCnpj())).findAny().get();
+                agendaPagamentos.stream().filter(agendaProduto -> agendaProduto.getFornecedorDto().getCnpj().equals(cnpj)).findAny().get();
             } catch (NoSuchElementException e) {
                 throw new NotFoundException("Não há agendamentos nesse dia com este cnpj");
             }
         } else {
             throw new NotFoundException("Não há agendamentos");
         }
-        List<AgendaPagamento> payments = pagamentos.stream().filter(newPayment -> newPayment.getDateToPayOrReceive().equals(agendaPaymentRequestDto.getDateToPayOrReceive())).toList();
-        AgendaPagamento payToSave = payments.stream().filter(pay -> pay.getFornecedorDto().getCnpj().equals(agendaPaymentRequestDto.getCnpj())).findAny().get();
-        if (!payToSave.getDateToPayOrReceive().equals(agendaPaymentRequestDto.getSituacaoPagamento())) {
-            switch (agendaPaymentRequestDto.getSituacaoPagamento()) {
-                case PAGA, A_PAGAR: payToSave.setSituacaoPagamento(agendaPaymentRequestDto.getSituacaoPagamento());
+        List<AgendaPagamento> payments = pagamentos.stream().filter(newPayment -> newPayment.getDateToPayOrReceive().equals(dateToPayOrReceive)).toList();
+        AgendaPagamento payToSave = payments.stream().filter(pay -> pay.getFornecedorDto().getCnpj().equals(cnpj)).findAny().get();
+        if (!payToSave.getDateToPayOrReceive().equals(status)) {
+            switch (status) {
+                case PAGA, A_PAGAR: payToSave.setSituacaoPagamento(status);
             }
         }
-        UsuarioRequestDto user = getInstanceForUserRQDto(agendaPaymentRequestDto.getUsername(), agendaPaymentRequestDto.getName());
+        UsuarioRequestDto user = getInstanceForUserRQDto(username, name);
         user.setAgendaPagamento(payToSave);
-        AgendaPaymentDto agendaToInsert = usuarioService.updatePaymentByStatus(user, agendaPaymentRequestDto.getCnpj());
-        insertAgendaInHistorico(agendaPaymentRequestDto.getUsername(), agendaPaymentRequestDto.getCnpj(), agendaToInsert);
+        AgendaPaymentDto agendaToInsert = usuarioService.updatePaymentByStatus(user, cnpj);
+        insertAgendaInHistorico(username, cnpj, agendaToInsert);
         return agendaToInsert;
     }
 

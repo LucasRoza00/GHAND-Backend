@@ -34,6 +34,10 @@ public class AgendaProdutoController {
         return new ResponseEntity(agendaProductService.findAgendaByMonth(agendaProdutoRequestDto), HttpStatus.ACCEPTED);
     }
 
+    @PostMapping("/findByStatus")
+    public ResponseEntity<List<AgendaProdDto>> findAgendaByStatus(@RequestBody AgendaProdutoRequestDto agendaProdutoRequestDto) throws InvalidValueException, NotFoundException, NotAuthorizedException {
+        return new ResponseEntity(agendaProductService.findAgendaByStatus(agendaProdutoRequestDto), HttpStatus.OK);
+    }
     @DeleteMapping("deleteReceive")
     public ResponseEntity deleteReceive(@RequestParam String username,
                                         @RequestParam String name,

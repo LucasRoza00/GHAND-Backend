@@ -59,4 +59,12 @@ public class UsuarioController {
         return new ResponseEntity(usuarioService.loginUser(usuarioRequestDto), HttpStatus.ACCEPTED);
     }
 
+
+    @PutMapping("/modifyUserInfos")
+    public ResponseEntity<UsuarioDto> modifyUser(@RequestParam String username,
+                                                 @RequestParam String usernameToSet,
+                                                 @RequestParam String nameToSet,
+                                                 @RequestParam String password) throws InvalidValueException, NotAuthorizedException {
+        return new ResponseEntity(usuarioService.modifyUsersInfo(username, usernameToSet, nameToSet, password), HttpStatus.OK);
+    }
 }
