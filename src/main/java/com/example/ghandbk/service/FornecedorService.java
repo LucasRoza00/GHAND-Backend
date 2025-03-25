@@ -27,20 +27,41 @@ public class FornecedorService {
 
     public void addFornecedor(FornecedorRequestDto fornecedorRequestDto) throws InvalidValueException, NotAuthorizedException, NotFoundException {
         if (fornecedorRequestDto.getRazaoSocial().isBlank()) throw new InvalidValueException("Preencha o campo");
-
-        if (fornecedorRequestDto.getCnpj().length() != 14) throw new InvalidValueException("Cnpj inválido");
-        String cnpjComMascara = formatarCnpjComMascara(fornecedorRequestDto.getCnpj());
+        String cnpjSemMascara = fornecedorRequestDto.getCnpj().replaceAll("[^\\d]", "");
+        if (cnpjSemMascara.length() != 14) throw new InvalidValueException("Cnpj inválido");
+        String cnpjComMascara = formatarCnpjComMascara(cnpjSemMascara);
         if (fornecedorRequestDto.getName().isBlank() && fornecedorRequestDto.getUsername().isBlank()) throw new InvalidValueException("Faça login novamente ");
+        String telefoneSemMascara = fornecedorRequestDto.getContactNumber().replaceAll("[^\\d]", "");
+        if (telefoneSemMascara.length() != 11) throw new InvalidValueException("Número de telefone inválido");
+        String telefoneComMascara = formatarNumeroComMascara(telefoneSemMascara);
+        if (!isEmailValido(fornecedorRequestDto.getEletronicAddres())) {
+            throw new InvalidValueException("E-mail inválido");
+        }
         UsuarioRequestDto usuarioRequestDto = new UsuarioRequestDto();
         usuarioRequestDto.setUsername(fornecedorRequestDto.getUsername());
         usuarioRequestDto.setName(fornecedorRequestDto.getName());
         Fornecedor fornecedor = objectMapper.convertValue(fornecedorRequestDto, Fornecedor.class);
         fornecedor.setCnpj(cnpjComMascara);
+        fornecedor.setContactNumber(telefoneComMascara);
         fornecedor.setStatus(Situacao.ATIVA);
         usuarioRequestDto.setFornecedor(fornecedor);
         usuarioService.updateUser(usuarioRequestDto);
     }
 
+    private boolean isEmailValido(String email) {
+        String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
+        return email.matches(emailRegex);
+    }
+    private String formatarNumeroComMascara(String numero) throws InvalidValueException {
+        String cleaned = numero.replaceAll("[^\\d]", "");
+        if (cleaned.length() != 11) {
+            throw new InvalidValueException("Número de telefone inválido");
+        }
+        return String.format("(%s) %s-%s",
+                cleaned.substring(0, 2),  // DDD
+                cleaned.substring(2, 7),  // Primeiros 5 dígitos
+                cleaned.substring(7));    // Últimos 4 dígitos
+    }
     private String formatarCnpjComMascara(String cnpj) {
         return cnpj.substring(0, 2) + "." +
                 cnpj.substring(2, 5) + "." +
@@ -51,7 +72,13 @@ public class FornecedorService {
 
     public List<FornecedorDto> findAllFornecedores(String username) throws InvalidValueException, NotFoundException {
        List<Fornecedor> fornecedores = usuarioService.getFornecedores(username);
-       List<FornecedorDto> fornecedorDtos = fornecedores.stream().map(a -> new FornecedorDto(a.getRazaoSocial(), a.getCnpj(), a.getStatus(), a.getHistorico())).collect(Collectors.toList());
+       List<FornecedorDto> fornecedorDtos = fornecedores.stream().map(a -> FornecedorDto.builder()
+               .razaoSocial(a.getRazaoSocial())
+               .cnpj(a.getCnpj())
+               .status(a.getStatus())
+               .contactNumber(a.getContactNumber())
+               .eletronicAddres(a.getEletronicAddres())
+               .historico(a.getHistorico()).build()).collect(Collectors.toList());
        return fornecedorDtos;
     }
 
@@ -64,7 +91,8 @@ public class FornecedorService {
     }
 
     public FornecedorDto getFornecedorByCnpj(FornecedorRequestDto fornecedorRequestDto) throws InvalidValueException, NotFoundException {
-        if (fornecedorRequestDto.getCnpj().isBlank() || fornecedorRequestDto.getCnpj().length() < 11) throw new InvalidValueException("Cnpj inválido");
+        String cnpjSemMascara = fornecedorRequestDto.getCnpj().replaceAll("[^\\d]", "");
+        if (fornecedorRequestDto.getCnpj().isBlank() || cnpjSemMascara.length() != 14) throw new InvalidValueException("Cnpj inválido");
         verifyCnpj(fornecedorRequestDto.getUsername(), fornecedorRequestDto.getCnpj());
         List<FornecedorDto> fornecedores = findAllFornecedores(fornecedorRequestDto.getUsername());
         Stream<FornecedorDto> fornecedorDto = fornecedores.stream().filter(fornecedor -> fornecedor.getCnpj().equals(fornecedorRequestDto.getCnpj()));
@@ -75,13 +103,15 @@ public class FornecedorService {
 
     public void deleteFornecedor(String username, String cnpj) throws InvalidValueException, NotFoundException, NotAuthorizedException {
         if (username.isBlank()) throw new InvalidValueException("Preencha o campo");
-        if (cnpj.isBlank() || cnpj.length() <11) throw new InvalidValueException("Cnpj Inválido");
+        String cnpjSemMascara = cnpj.replaceAll("[^\\d]", "");
+        if (cnpj.isBlank() || cnpjSemMascara.length() != 14) throw new InvalidValueException("Cnpj Inválido");
         usuarioService.deleteFornecedor(username, cnpj);
 
     }
 
     public FornecedorDto updateFornecedor(FornecedorRequestDto fornecedorRequestDto, String cnpj) throws InvalidValueException, NotFoundException, NotAuthorizedException {
-        if (fornecedorRequestDto.getCnpj().isBlank() || fornecedorRequestDto.getCnpj().length() < 11) throw new InvalidValueException("Cnpj inválido");
+        String cnpjSemMascara = fornecedorRequestDto.getCnpj().replaceAll("[^\\d]", "");
+        if (fornecedorRequestDto.getCnpj().isBlank() || cnpjSemMascara.length() != 14) throw new InvalidValueException("Cnpj inválido");
         if (fornecedorRequestDto.getUsername() == null || fornecedorRequestDto.getUsername().isBlank()) throw new InvalidValueException("Usuario inválido");
         List<Fornecedor> fornecedors = usuarioService.getFornecedores(fornecedorRequestDto.getUsername());
         UsuarioRequestDto user = new UsuarioRequestDto();
@@ -108,7 +138,8 @@ public class FornecedorService {
     }
 
     public FornecedorDto updateFornecedorByStatus(FornecedorRequestDto fornecedorRequestDto) throws InvalidValueException, NotFoundException, NotAuthorizedException {
-        if (fornecedorRequestDto.getCnpj().isBlank() || fornecedorRequestDto.getCnpj().length() < 11) throw new InvalidValueException("Cnpj inválido");
+        String cnpjSemMascara = fornecedorRequestDto.getCnpj().replaceAll("[^\\d]", "");
+        if (fornecedorRequestDto.getCnpj().isBlank() || cnpjSemMascara.length() != 14) throw new InvalidValueException("Cnpj inválido");
         if (fornecedorRequestDto.getUsername() == null || fornecedorRequestDto.getUsername().isBlank()) throw new InvalidValueException("Usuario inválido");
         verifyCnpj(fornecedorRequestDto.getUsername(), fornecedorRequestDto.getCnpj());
         List<Fornecedor> fornecedors = usuarioService.getFornecedores(fornecedorRequestDto.getUsername());

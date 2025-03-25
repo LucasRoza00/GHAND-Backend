@@ -13,6 +13,8 @@ public class Fornecedor {
     private String razaoSocial;
     private String cnpj;
     private Situacao status;
+    private String contactNumber;
+    private String eletronicAddres;
     private List historico;
 
 }

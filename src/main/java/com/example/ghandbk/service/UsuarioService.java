@@ -122,7 +122,7 @@ public class UsuarioService {
         user.setName(usuarioRequestDto.getName());
         usuarioRepo.save(user);
         List<Fornecedor> fornecedores = getFornecedores(usuarioRequestDto.getUsername());
-        List<FornecedorDto> fornecedorDtos = fornecedores.stream().map(a -> new FornecedorDto(a.getRazaoSocial(), a.getCnpj(), a.getStatus(), a.getHistorico())).collect(Collectors.toList());
+        List<FornecedorDto> fornecedorDtos = fornecedores.stream().map(a -> new FornecedorDto(a.getRazaoSocial(), a.getCnpj(), a.getContactNumber(), a.getEletronicAddres(),a.getStatus(), a.getHistorico())).collect(Collectors.toList());
         Stream<FornecedorDto> fornecedorToReturn = fornecedorDtos.stream().filter(fornecedo -> fornecedo.getCnpj().equals(usuarioRequestDto.getFornecedor().getCnpj()));
         FornecedorDto fornecedorDto = fornecedorToReturn.findAny().get();
         return fornecedorDto;

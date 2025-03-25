@@ -11,9 +11,11 @@ import java.util.List;
 @Setter
 public class FornecedorDto {
     @Builder
-    public FornecedorDto(String razaoSocial, String cnpj, Situacao status, List historico) {
+    public FornecedorDto(String razaoSocial, String cnpj, String contactNumber, String eletronicAddres, Situacao status, List historico) {
         this.razaoSocial = razaoSocial;
         this.cnpj = cnpj;
+        this.contactNumber = contactNumber;
+        this.eletronicAddres = eletronicAddres;
         this.status = status;
         this.historico = historico;
     }
@@ -21,7 +23,8 @@ public class FornecedorDto {
     private String razaoSocial;
     private String cnpj;
     private Situacao status;
-
+    private String contactNumber;
+    private String eletronicAddres;
     private List historico;
 
 }
