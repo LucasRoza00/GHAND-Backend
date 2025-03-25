@@ -27,16 +27,26 @@ public class FornecedorService {
 
     public void addFornecedor(FornecedorRequestDto fornecedorRequestDto) throws InvalidValueException, NotAuthorizedException, NotFoundException {
         if (fornecedorRequestDto.getRazaoSocial().isBlank()) throw new InvalidValueException("Preencha o campo");
-        if (fornecedorRequestDto.getCnpj().length() != 11) throw new InvalidValueException("Cnpj inválido");
 
+        if (fornecedorRequestDto.getCnpj().length() != 14) throw new InvalidValueException("Cnpj inválido");
+        String cnpjComMascara = formatarCnpjComMascara(fornecedorRequestDto.getCnpj());
         if (fornecedorRequestDto.getName().isBlank() && fornecedorRequestDto.getUsername().isBlank()) throw new InvalidValueException("Faça login novamente ");
-            UsuarioRequestDto usuarioRequestDto = new UsuarioRequestDto();
+        UsuarioRequestDto usuarioRequestDto = new UsuarioRequestDto();
         usuarioRequestDto.setUsername(fornecedorRequestDto.getUsername());
         usuarioRequestDto.setName(fornecedorRequestDto.getName());
         Fornecedor fornecedor = objectMapper.convertValue(fornecedorRequestDto, Fornecedor.class);
+        fornecedor.setCnpj(cnpjComMascara);
         fornecedor.setStatus(Situacao.ATIVA);
         usuarioRequestDto.setFornecedor(fornecedor);
         usuarioService.updateUser(usuarioRequestDto);
+    }
+
+    private String formatarCnpjComMascara(String cnpj) {
+        return cnpj.substring(0, 2) + "." +
+                cnpj.substring(2, 5) + "." +
+                cnpj.substring(5, 8) + "/" +
+                cnpj.substring(8, 12) + "-" +
+                cnpj.substring(12, 14);
     }
 
     public List<FornecedorDto> findAllFornecedores(String username) throws InvalidValueException, NotFoundException {
