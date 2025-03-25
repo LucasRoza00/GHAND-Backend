@@ -35,6 +35,6 @@ docker run -p 8084:8084 gh-api-supply
 ```
 ## Para acessar EndPoints da API utilizar as seguinte urls após inicializar o projeto:
  - http://localhost:8084
- - ghand-backend-production.up.railway.app
+ - https://ghand-backend-production.up.railway.app
 
 ## Desenvolvido por: Raul Rodrigues
