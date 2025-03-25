@@ -69,7 +69,15 @@ public class UsuarioController {
     public ResponseEntity<UsuarioDto> modifyUser(@RequestParam String username,
                                                  @RequestParam String usernameToSet,
                                                  @RequestParam String nameToSet,
+                                                 @RequestParam String eletronicAddres,
                                                  @RequestParam String password) throws InvalidValueException, NotAuthorizedException {
-        return new ResponseEntity(usuarioService.modifyUsersInfo(username, usernameToSet, nameToSet, password), HttpStatus.OK);
+        return new ResponseEntity(usuarioService.modifyUsersInfo(username, usernameToSet, nameToSet, eletronicAddres, password), HttpStatus.OK);
+    }
+
+    @PostMapping("/modifyPassword")
+    public ResponseEntity<UsuarioDto> changePassword(@RequestParam String username,
+                                                     @RequestParam String oldPassword,
+                                                     @RequestParam String newPassword) throws InvalidValueException, NotFoundException, NotAuthorizedException {
+        return new ResponseEntity(usuarioService.modifyPassword(username, oldPassword, newPassword), HttpStatus.ACCEPTED);
     }
 }

@@ -46,6 +46,7 @@ public class UsuarioService {
         return objectMapper.convertValue(usuarioRepo.save(userToSave), UsuarioDto.class);
     }
 
+
     public void deleteUser(UsuarioRequestDto usuarioRequestDto) throws InvalidValueException, NotFoundException, NotAuthorizedException {
         if (usuarioRequestDto.getUsername().isBlank() && usuarioRequestDto.getPassword().isBlank()) throw new InvalidValueException("Preencha os campos");
         if (!usuarioRepo.existsById(usuarioRequestDto.getUsername())) throw new NotFoundException("Usuário não encontrado");
@@ -70,6 +71,7 @@ public class UsuarioService {
         if (!usuarioRequestDto.getName().isEmpty()) {
             user.setName(usuarioRequestDto.getName());
         }
+
         user.setUsername(usuarioRequestDto.getUsername());
         usuarioRepo.save(user);
         return usuarioRepo.findById(user.getUsername()).get();
@@ -318,7 +320,7 @@ public class UsuarioService {
 
     }
 
-    public UsuarioDto modifyUsersInfo(String username, String usernameTOSet, String nameToSet, String password) throws InvalidValueException, NotAuthorizedException {
+    public UsuarioDto modifyUsersInfo(String username, String usernameTOSet, String nameToSet, String eletronicAddres, String password) throws InvalidValueException, NotAuthorizedException {
         if (username.isEmpty()) throw new InvalidValueException("Username Inválido");
         if (usernameTOSet.isEmpty() && nameToSet.isEmpty()) throw new InvalidValueException("Informações novas inválidas");
         if (usuarioRepo.findUser(username, password) == null) throw new NotAuthorizedException("Username/Password inválidas");
@@ -330,6 +332,16 @@ public class UsuarioService {
             user.setName(nameToSet);
         }
         usuarioRepo.deleteById(username);
+        usuarioRepo.save(user);
+        return objectMapper.convertValue(user, UsuarioDto.class);
+    }
+
+    public UsuarioDto modifyPassword(String username, String oldPassword, String newPassword) throws InvalidValueException, NotFoundException, NotAuthorizedException {
+        if (username.isEmpty() && oldPassword.isEmpty() && newPassword.isEmpty()) throw new InvalidValueException("Dados inválidos");
+        Usuario user = findUserByid(username);
+        if (!user.getPassword().equals(oldPassword)) throw new NotAuthorizedException("Dados inválidos");
+        if (oldPassword.equals(newPassword)) throw new InvalidValueException("Dados inválidos");
+        user.setPassword(newPassword);
         usuarioRepo.save(user);
         return objectMapper.convertValue(user, UsuarioDto.class);
     }
