@@ -127,6 +127,12 @@ public class FornecedorService {
             } else if (fornecedorRequestDto.getHistoricoProduto() != null) {
                 fornecedorToSave.setHistorico(insertHistory(fornecedorRequestDto));
             }
+            if (fornecedorRequestDto.getEletronicAddres() != null) {
+                fornecedorToSave.setEletronicAddres(fornecedorRequestDto.getEletronicAddres());
+            }
+            if (fornecedorRequestDto.getContactNumber() != null) {
+                fornecedorToSave.setContactNumber(fornecedorRequestDto.getContactNumber());
+            }
             fornecedorToSave.setCnpj(fornecedorRequestDto.getCnpj());
             user.setUsername(fornecedorRequestDto.getUsername());
             user.setName(fornecedorRequestDto.getName());
@@ -145,8 +151,10 @@ public class FornecedorService {
         List<Fornecedor> fornecedors = usuarioService.getFornecedores(fornecedorRequestDto.getUsername());
         Stream<Fornecedor> fornecedorStream = fornecedors.stream().filter(fornecedor -> fornecedor.getCnpj().equals(fornecedorRequestDto.getCnpj()));
         Fornecedor fornecedorToSave = fornecedorStream.findAny().get();
-        switch (fornecedorRequestDto.getStatus()) {
-            case ATIVA, INATIVA -> fornecedorToSave.setStatus(fornecedorRequestDto.getStatus());
+        if (fornecedorRequestDto.getStatus().equals(Situacao.ATIVA)) {
+            fornecedorToSave.setStatus(Situacao.INATIVA);
+        } else {
+            fornecedorToSave.setStatus(Situacao.ATIVA);
         }
         UsuarioRequestDto user = new UsuarioRequestDto();
         user.setUsername(fornecedorRequestDto.getUsername());

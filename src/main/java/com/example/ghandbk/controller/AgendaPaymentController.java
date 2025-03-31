@@ -35,7 +35,7 @@ public class AgendaPaymentController {
     @PostMapping("/findPaymentsByMonth")
     @Operation(summary = "Filtra os pagamentos agendados", description = "Lista os pagamentos agendados filtrados pelo mês")
     public ResponseEntity<List<AgendaPaymentDto>> findPaymentsByMonth(@RequestBody AgendaPaymentRequestDto agendaPaymentRequestDto) throws InvalidValueException, NotFoundException {
-        return new ResponseEntity(agendaPaymentService.findAgendaByMonth(agendaPaymentRequestDto), HttpStatus.FOUND);
+        return new ResponseEntity(agendaPaymentService.findAgendaByMonth(agendaPaymentRequestDto), HttpStatus.OK);
     }
 
     @PostMapping("/findPaymentsByStatus")
