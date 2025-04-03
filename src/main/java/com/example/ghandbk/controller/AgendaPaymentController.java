@@ -63,7 +63,7 @@ public class AgendaPaymentController {
         return new ResponseEntity(agendaPaymentService.modifyStatus(username, name, cnpj, dateToPayOrReceive, status), HttpStatus.ACCEPTED);
     }
     @PostMapping("/listAgendas/{username}")
-    @Operation(summary = "Lista os pagamentos agendados", description = "Lista todos os pagamentos agendados pelo uersename")
+    @Operation(summary = "Lista os pagamentos agendados", description = "Lista todos os pagamentos agendados")
     public ResponseEntity<List<AgendaPaymentDto>> findAgendas(@PathVariable("username") String username) throws InvalidValueException, NotFoundException {
         return new ResponseEntity(agendaPaymentService.findAgendas(username), HttpStatus.OK);
     }
